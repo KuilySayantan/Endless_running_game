@@ -1,4 +1,5 @@
 import { Sitting,Running,Jumping,Falling,Rolling,Diving,Hit } from "./playerStates.js";
+import { CollisionAnimation } from "./collisionAnimation.js";
 
 export class Player{
     constructor(game){
@@ -27,8 +28,8 @@ export class Player{
         this.currentState.handleInput(input);
         //horizontal movement 
         this.x += this.speed;
-        if (input.includes('ArrowRight')) this.speed = this.maxSpeed;
-        else if (input.includes('ArrowLeft')) this.speed = -this.maxSpeed;
+        if (input.includes('ArrowRight') && this.currentState !== this.states[6]) this.speed = this.maxSpeed;
+        else if (input.includes('ArrowLeft') && this.currentState !== this.states[6]) this.speed = -this.maxSpeed;
         else this.speed = 0;
         //Horizontal Boundaries
         if (this.x < 0) this.x = 0;
@@ -77,12 +78,15 @@ export class Player{
                 enemy.y < this.y + this.height 
             ){
                 enemy.markedForDeletion = true;
-                if(this.currentState == this.states[4] ||
-                    this.currentState == this.states[5]
+                this.game.collisions.push(new CollisionAnimation(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5));
+                if(this.currentState === this.states[4] ||
+                    this.currentState === this.states[5]
                 ){
                     this.game.score++;
                 } else {
                     this.setState(6, 0);
+                    this.game.lives--;
+                    if (this.game.lives <= 0) this.game.gameOver = true;
                 }
 
             }
